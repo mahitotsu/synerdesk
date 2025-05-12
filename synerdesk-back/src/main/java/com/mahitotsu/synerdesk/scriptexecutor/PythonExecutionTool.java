@@ -1,29 +1,33 @@
-package com.mahitotsu.synerdesk.common;
+package com.mahitotsu.synerdesk.scriptexecutor;
 
-import org.springframework.stereotype.Component;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
+
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.IOAccess;
+import org.springframework.stereotype.Component;
 
 import com.mahitotsu.synerdesk.definition.DefaultReturnControlToolDefinition;
 
 @Component
-public class JavaScriptExecutionTool extends DefaultReturnControlToolDefinition<JavaScriptExecutor>
+public class PythonExecutionTool extends DefaultReturnControlToolDefinition<JavaScriptExecutor>
         implements JavaScriptExecutor {
 
-    protected JavaScriptExecutionTool() {
-        super(JavaScriptExecutor.class, "JavascriptExecutor");
+    protected PythonExecutionTool() {
+        super(JavaScriptExecutor.class, "PythonExecutor");
     }
 
     @Override
     public String execute(String script) throws Exception {
         try {
-            final Value result = Context.newBuilder("python")
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Context.newBuilder("python")
                     .allowIO(IOAccess.ALL)
                     .allowAllAccess(true)
+                    .out(out)
                     .build()
                     .eval("python", script);
-            return result == null ? null : result.asString();
+            return new String(out.toByteArray(), Charset.defaultCharset());
         } catch (Exception e) {
             throw new IllegalStateException("An error occurred while running the script.", e);
         }

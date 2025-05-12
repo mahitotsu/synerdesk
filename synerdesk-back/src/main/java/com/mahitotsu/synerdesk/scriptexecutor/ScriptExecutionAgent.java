@@ -1,4 +1,4 @@
-package com.mahitotsu.synerdesk.common;
+package com.mahitotsu.synerdesk.scriptexecutor;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,12 +21,13 @@ public class ScriptExecutionAgent implements AgentDefinition {
                 以下のプログラム言語をサポートします。
                 * javascript
                 * python
+                * SQL
                 """;
     }
 
     @Override
     public Collection<String> getActionGroupNames() {
-        return Arrays.asList("JavascriptExecutor", "PythonExecutor");
+        return Arrays.asList("JavascriptExecutor", "PythonExecutor", "SqlExecutor");
     }
 
 }

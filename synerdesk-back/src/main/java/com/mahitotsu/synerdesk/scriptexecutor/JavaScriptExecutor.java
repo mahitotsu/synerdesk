@@ -1,4 +1,4 @@
-package com.mahitotsu.synerdesk.common;
+package com.mahitotsu.synerdesk.scriptexecutor;
 
 import com.mahitotsu.synerdesk.definition.Description;
 
