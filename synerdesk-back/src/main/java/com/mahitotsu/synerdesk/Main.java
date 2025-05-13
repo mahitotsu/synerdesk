@@ -5,7 +5,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import com.mahitotsu.synerdesk.definition.AgentDefinitionLookup;
+import com.mahitotsu.synerdesk.definition.AnnotatedDescriptionSupplier;
 import com.mahitotsu.synerdesk.definition.BeanFactoryAgentDefinitionLookup;
+import com.mahitotsu.synerdesk.definition.BeanFactoryToolInstanceLookup;
+import com.mahitotsu.synerdesk.definition.BeanFactoryToolDefinitionLookup;
+import com.mahitotsu.synerdesk.definition.ToolDefinitionLookup;
+import com.mahitotsu.synerdesk.definition.ToolInstanceLookup;
+import com.mahitotsu.synerdesk.definition.DefaultReturnControlToolDefinition.DescriptionSupplier;
 
 import software.amazon.awssdk.services.bedrockagentruntime.BedrockAgentRuntimeAsyncClient;
 
@@ -24,5 +30,20 @@ public class Main {
     @Bean
     public AgentDefinitionLookup agentDefinitionLookup() {
         return new BeanFactoryAgentDefinitionLookup();
+    }
+
+    @Bean
+    public ToolDefinitionLookup toolDefinitionLookup() {
+        return new BeanFactoryToolDefinitionLookup();
+    }
+
+    @Bean
+    public DescriptionSupplier descriptionSupplier() {
+        return new AnnotatedDescriptionSupplier();
+    }
+
+    @Bean
+    public ToolInstanceLookup toolInstanceLookup() {
+        return new BeanFactoryToolInstanceLookup();
     }
 }

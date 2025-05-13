@@ -3,7 +3,6 @@ package com.mahitotsu.synerdesk.definition;
 import java.util.Collection;
 import java.util.Collections;
 
-import software.amazon.awssdk.services.bedrockagentruntime.model.AgentActionGroup;
 import software.amazon.awssdk.services.bedrockagentruntime.model.AgentCollaboration;
 import software.amazon.awssdk.services.bedrockagentruntime.model.CollaboratorConfiguration;
 
@@ -19,7 +18,7 @@ public interface AgentDefinition {
 
     String getInstruction();
 
-    default Collection<AgentActionGroup> getActionGroups() {
+    default Collection<String> getActionGroupNames() {
         return Collections.emptySet();
     }
 
