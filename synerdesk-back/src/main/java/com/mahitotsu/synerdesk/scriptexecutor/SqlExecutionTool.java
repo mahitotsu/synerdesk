@@ -79,8 +79,9 @@ public class SqlExecutionTool extends DefaultReturnControlToolDefinition<SqlExec
                     throws SQLException, DataAccessException {
                 final List<Map<String, Object>> result = new ArrayList<>();
                 final DatabaseMetaData metaData = con.getMetaData();
-                final ResultSet rs = metaData.getColumns(con.getCatalog(), con.getSchema(), tableName.toUpperCase(),
-                        "%");
+
+                final String schema = con.getSchema() == null ? "public" : con.getSchema();
+                final ResultSet rs = metaData.getColumns(null, schema, tableName, "%");
                 while (rs.next()) {
                     final Map<String, Object> columnInfo = new HashMap<>();
                     columnInfo.put("tableName", rs.getString("TABLE_NAME"));

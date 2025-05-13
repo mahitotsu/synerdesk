@@ -9,8 +9,7 @@ public interface JavaScriptExecutor {
 
     @Description("""
             指定されたjavascriptのコードを実行して結果を返します。
-            最後に評価された式の結果がコード全体の実行結果となります。
-            返される結果は文字列型に変換されます。
+            標準出力に出力された内容が実行結果となります。
             """)
     String execute(
             @Description("""
