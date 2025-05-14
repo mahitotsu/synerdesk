@@ -56,11 +56,24 @@ public class BedrockInlineAgentService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public String invoke(final String agentName, final String prompt) {
-        return this.invoke(UUID.randomUUID().toString(), agentName, prompt);
+    public String[] invoke(final String agentName, final String[] prompts) {
+        return invoke(agentName, prompts, UUID.randomUUID().toString());
     }
 
-    public String invoke(final String sessionId, final String agentName, final String prompt) {
+    public String[] invoke(final String agentName, final String[] prompts, final String sessionId) {
+
+        final List<String> answers = new ArrayList<>();
+        for (int i = 0; i < prompts.length; i++) {
+            answers.add(this.invoke(agentName, prompts[i], sessionId));
+        }
+        return answers.toArray(new String[answers.size()]);
+    }
+
+    public String invoke(final String agentName, final String prompt) {
+        return this.invoke(agentName, prompt, UUID.randomUUID().toString());
+    }
+
+    public String invoke(final String agentName, final String prompt, final String sessionId) {
 
         if (sessionId == null || sessionId.isEmpty()) {
             throw new IllegalArgumentException("Session ID cannot be null or empty.");

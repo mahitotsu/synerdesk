@@ -1,7 +1,5 @@
 package com.mahitotsu.synerdesk.invoker;
 
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,16 +13,25 @@ public class BedrockInlineAgentServiceTest {
     @Test
     public void testInvoke() {
 
-        final String sessionId = UUID.randomUUID().toString();
-        this.bedrockInlineAgentService.invoke(sessionId, "ScriptExecutionAgent", "タスクを格納するテーブルを見つけてください。");
-        this.bedrockInlineAgentService.invoke(sessionId, "ScriptExecutionAgent", "データベース製品を確認してください。");
-        this.bedrockInlineAgentService.invoke(sessionId, "ScriptExecutionAgent", """
-        サンプルデータを5件格納するためのSQL文を作成してください。
-        SQL文は確認したデータベース製品で実行できるものにしてください。ただし、SQL文の実行はしないでください。
-        SQL文はsqlファイルに記述するのと同じ形式で記述してください。
-        1行目に作成したSQL文の説明をコメント形式で記述してください。
-        それ以外のコメントは記述しないでください。
-                        """);
+        this.bedrockInlineAgentService.invoke("ScriptExecutionAgent", new String[] {
+                "タスクを格納するテーブルを見つけてください。",
+                "テーブルのカラム定義を確認してください。",
+                "データベース製品を確認してください。",
+                """
+                        サンプルデータを5件格納するためのSQL文を作成してください。
+                        サンプルデータは日本語で作成してください。
+                        サンプルデータは出来るだけ値が重複しないようにしてください。
+                        1文で1レコードを格納するSQL文にしてください。
+                        SQLの構文や関数は確認したデータベース製品に最適なものを選択してください。
+
+                        以下のフォーマットで回答してください。
+                        <format>
+                        -- 今回の作業内容の概要
+                        INSERT INTO ... データを格納するSQL文。1行に1レコード。行末にセミコロン(;)
+                        ... 作成したSQLを全て出力
+                        </format>
+                        """
+        });
     }
 
 }
