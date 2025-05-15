@@ -98,4 +98,15 @@ public class SqlExecutionTool extends DefaultReturnControlToolDefinition<SqlExec
             }
         });
     }
+
+    @Override
+    public List<Map<String, Object>> query(final String selectStatement) {
+
+        return this.JdbcOperations.execute(new ConnectionCallback<List<Map<String, Object>>>() {
+            public List<Map<String, Object>> doInConnection(@NonNull Connection con)
+                    throws SQLException, DataAccessException {
+                return SqlExecutionTool.this.JdbcOperations.queryForList(selectStatement);
+            }
+        });
+    }
 }

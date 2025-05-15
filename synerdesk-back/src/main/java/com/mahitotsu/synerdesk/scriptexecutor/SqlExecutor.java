@@ -28,4 +28,12 @@ public interface SqlExecutor {
             @Description("""
                     テーブル名を指定してください。
                     """) String tableName);
+
+    @Description("""
+            SQL文を実行して結果を返します。実行できるのはSELECT文のみです。単一のステートメントのみ実行できます。
+                            """)
+    List<Map<String, Object>> query(
+            @Description("""
+                    実行したいSQL文を指定してください。
+                    """) String selectStatement);
 }

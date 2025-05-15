@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +25,6 @@ import software.amazon.awssdk.services.bedrockagentruntime.model.CollaboratorCon
 import software.amazon.awssdk.services.bedrockagentruntime.model.ContentBody;
 import software.amazon.awssdk.services.bedrockagentruntime.model.FunctionInvocationInput;
 import software.amazon.awssdk.services.bedrockagentruntime.model.FunctionResult;
-import software.amazon.awssdk.services.bedrockagentruntime.model.InlineAgentReturnControlPayload;
 import software.amazon.awssdk.services.bedrockagentruntime.model.InlineSessionState;
 import software.amazon.awssdk.services.bedrockagentruntime.model.InvocationInputMember;
 import software.amazon.awssdk.services.bedrockagentruntime.model.InvocationResultMember;
@@ -38,8 +35,6 @@ import software.amazon.awssdk.services.bedrockagentruntime.model.ResponseState;
 
 @Service
 public class BedrockInlineAgentService {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private BedrockAgentRuntimeAsyncClient bedrockAgentRuntimeAsyncClient;
@@ -84,35 +79,17 @@ public class BedrockInlineAgentService {
 
         final String sessionIdStr = sessionId == null ? UUID.randomUUID().toString() : sessionId.toString();
         final StringBuilder outputText = new StringBuilder();
-
         final List<InlineSessionState> sessionState = new ArrayList<>(1);
-        final List<InlineAgentReturnControlPayload> returnControlPayloads = new ArrayList<>();
-        final List<InvocationResultMember> invocationResultMembers = new ArrayList<>();
 
         sessionState.add(null);
         do {
-            returnControlPayloads.clear();
             this.bedrockAgentRuntimeAsyncClient.invokeInlineAgent(
                     this.buildInlineAgentRequest(agentDefinition, sessionIdStr, prompt,
                             sessionState.get(0)),
-                    this.buildInvokeInlineAgentResponseHandler(outputText, returnControlPayloads))
+                    this.buildInvokeInlineAgentResponseHandler(outputText, sessionState))
                     .join();
+        } while (outputText.length() == 0);
 
-            invocationResultMembers.clear();
-            for (final InlineAgentReturnControlPayload payload : returnControlPayloads) {
-                for (InvocationInputMember inputMember : payload.invocationInputs()) {
-                    invocationResultMembers.add(this.processInvocationInput(inputMember));
-                }
-            }
-            if (returnControlPayloads.size() > 0) {
-                sessionState.set(0, InlineSessionState.builder()
-                        .invocationId(returnControlPayloads.get(0).invocationId())
-                        .returnControlInvocationResults(invocationResultMembers)
-                        .build());
-            }
-        } while (returnControlPayloads.size() > 0);
-
-        this.logger.info("Final answer: " + outputText.toString());
         return outputText.toString();
     }
 
@@ -150,14 +127,19 @@ public class BedrockInlineAgentService {
     }
 
     private InvokeInlineAgentResponseHandler buildInvokeInlineAgentResponseHandler(final StringBuilder outputText,
-            final Collection<InlineAgentReturnControlPayload> inlineAgentReturnControlPayloads) {
+            final List<InlineSessionState> sessionState) {
 
         return InvokeInlineAgentResponseHandler.builder()
                 .onEventStream(publisher -> publisher.subscribe(event -> event.accept(Visitor.builder()
-                        .onChunk(c -> outputText
-                                .append(c.bytes().asString(Charset.defaultCharset())))
-                        .onReturnControl(c -> inlineAgentReturnControlPayloads.add(c))
-                        .onTrace(c -> this.logger.info("Trace: " + c.trace()))
+                        .onChunk(c -> outputText.append(c.bytes().asString(Charset.defaultCharset())))
+                        .onReturnControl(c -> {
+                            final List<InvocationResultMember> invocationResultMembers = c.invocationInputs().stream()
+                                    .map(member -> this.processInvocationInput(member)).toList();
+                            sessionState.set(0, InlineSessionState.builder()
+                                    .invocationId(c.invocationId())
+                                    .returnControlInvocationResults(invocationResultMembers)
+                                    .build());
+                        })
                         .build())))
                 .build();
     }
@@ -174,8 +156,6 @@ public class BedrockInlineAgentService {
 
     private InvocationResultMember processInvocationInput(final InvocationInputMember inputMember) {
 
-        this.logger.info("Process the return control payload. payload: " + inputMember);
-
         final FunctionInvocationInput input = inputMember.functionInvocationInput();
         final ReturnControlToolDefinition<?> toolDefinition = ReturnControlToolDefinition.class
                 .cast(this.toolDefinitionLookup
@@ -189,7 +169,6 @@ public class BedrockInlineAgentService {
                             toolDefinition.invokeFunction(this.toolInstanceLookup, input));
             responseState = null;
         } catch (final Exception e) {
-            this.logger.error("Failed to invoke the tool.", e);
             result = e.toString();
             responseState = ResponseState.FAILURE;
         }
@@ -205,7 +184,6 @@ public class BedrockInlineAgentService {
                         .build())
                 .build();
 
-        this.logger.info("Process the return control payload. result: " + invocationResultMember);
         return invocationResultMember;
     }
 }

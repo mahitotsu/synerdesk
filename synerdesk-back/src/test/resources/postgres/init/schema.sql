@@ -12,38 +12,38 @@ comment on column user_account.display_name is '画面表示用のユーザー�
 -- プロジェクト情報
 create table project (
     project_id uuid primary key,
-    name varchar(128) not null
+    name varchar(128) not null unique
 );
 comment on table project is 'チケットが紐づくプロジェクト情報。';
 comment on column project.project_id is 'プロジェクトのUUID主キー。';
-comment on column project.name is 'プロジェクト名。';
+comment on column project.name is '一意なプロジェクト名。';
 
 -- 状態マスタ
 create table ticket_status (
     status_code varchar(32) primary key,
-    label varchar(64) not null
+    label varchar(64) not null unique
 );
-comment on table ticket_status is 'チケットの状態を表すマスタ（例: open, in_progress, closed など）。';
+comment on table ticket_status is 'チケットの状態を表すマスタ。';
 comment on column ticket_status.status_code is '状態コード（主キー）。';
-comment on column ticket_status.label is '画面表示用の状態ラベル。';
+comment on column ticket_status.label is '一意な画面表示用の状態ラベル。';
 
 -- 優先度マスタ
 create table ticket_priority (
     priority_code varchar(32) primary key,
-    label varchar(64) not null
+    label varchar(64) not null unique
 );
-comment on table ticket_priority is 'チケットの優先度（例: high, medium, low）を表すマスタ。';
+comment on table ticket_priority is 'チケットの優先度を表すマスタ。';
 comment on column ticket_priority.priority_code is '優先度コード（主キー）。';
-comment on column ticket_priority.label is '画面表示用の優先度ラベル。';
+comment on column ticket_priority.label is '一意な画面表示用の優先度ラベル。';
 
 -- 種別マスタ
 create table ticket_type (
     type_code varchar(32) primary key,
-    label varchar(64) not null
+    label varchar(64) not null unique
 );
-comment on table ticket_type is 'チケットの種別（例: バグ、タスク、要望など）を表すマスタ。';
+comment on table ticket_type is 'チケットの種別を表すマスタ。';
 comment on column ticket_type.type_code is '種別コード（主キー）。';
-comment on column ticket_type.label is '画面表示用の種別ラベル。';
+comment on column ticket_type.label is '一意な画面表示用の種別ラベル。';
 
 -- チケット本体
 create table ticket (
@@ -66,8 +66,8 @@ comment on column ticket.description is 'チケットの詳細な説明。';
 comment on column ticket.status_code is '状態コード。ticket_status テーブルを参照。';
 comment on column ticket.priority_code is '優先度コード。ticket_priority テーブルを参照。';
 comment on column ticket.type_code is '種別コード。ticket_type テーブルを参照。';
-comment on column ticket.reporter_id is 'チケットの報告者（user_account.user_id を参照）。';
-comment on column ticket.assignee_id is 'チケットの担当者（user_account.user_id を参照、NULL 可）。';
-comment on column ticket.project_id is 'チケットが属するプロジェクト（NULL 可）。';
+comment on column ticket.reporter_id is 'チケットの報告者。user_account テーブルを参照';
+comment on column ticket.assignee_id is 'チケットの担当者。user_account テーブルを参照、NULL 可';
+comment on column ticket.project_id is 'チケットが属するプロジェクト。project テーブルを参照、NULL 可';
 comment on column ticket.created_at is 'チケット作成日時。アプリケーション側で設定。';
 comment on column ticket.updated_at is 'チケット更新日時。アプリケーション側で更新。';

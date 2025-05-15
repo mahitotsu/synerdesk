@@ -16,7 +16,9 @@ public class TestContainerConfig {
         PostgreSQLContainer<?> container = new PostgreSQLContainer<>(
                 DockerImageName.parse("public.ecr.aws/docker/library/postgres:15.13-alpine3.20")
                         .asCompatibleSubstituteFor("postgres"));
-        container.withInitScripts("postgres/init/schema.sql");
+        container.withInitScripts(
+                "postgres/init/schema.sql",
+                "postgres/init/data.sql");
 
         return container;
     }
